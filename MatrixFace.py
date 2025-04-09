@@ -12,10 +12,10 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 prompt = "What is the average emotion of the group is experiencing (anger, surprise, disgust, enjoyment, fear, or sadness)?"
 
 # Image directory
-image_dir = "Images\Matrix"
+image_dir = "Images/Matrix"
 
 # Output CSV file
-output_csv = "gpt4_image_responses_MatrixFace.csv"
+output_csv = "Results/gpt4_image_responses_MatrixFace.csv"
 
 # Open CSV file and write header
 with open(output_csv, mode="w", newline="", encoding="utf-8") as file:
