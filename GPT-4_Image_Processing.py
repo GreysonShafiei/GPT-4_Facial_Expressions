@@ -2,6 +2,7 @@ import openai
 import base64
 import os
 import csv
+import Results
 from dotenv import load_dotenv
 
 # Load API key from .env
@@ -71,3 +72,6 @@ for image_dir in image_dirs:
 
                 except Exception as e:
                     print(f"Error processing {filename} in {category_name}: {str(e)}")
+
+print("Image processing complete. Running analysis:")
+Results.ResultsAnalysis.main()
