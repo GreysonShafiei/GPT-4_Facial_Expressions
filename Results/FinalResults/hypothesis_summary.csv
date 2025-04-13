@@ -1,5 +1,5 @@
 Hypothesis,Test,Stat,P-value,Significant
-H1,One-sample t-test (vs 80%),-7.9267225659598886,2.1397101589767348e-14,True
-H2,Paired t-test (upright vs inverted),9.940470292711897,2.9703451907877105e-19,True
-H3,Independent t-test (individual vs matrixed),,,False
-H4,Chi-square test (matrix vs chance),,,False
+H1,One-sample t-test (vs 80%),-9.11117239534784,2.603808294948028e-18,True
+H2,Paired t-test (upright vs inverted),9.930843346533374,1.5650786891766925e-19,True
+H3,Independent t-test (individual vs matrixed),2.2273691553954658,0.026412105044392696,True
+H4,Chi-square test (matrix vs chance),3.3050806085372066,0.0009494908766548793,True
