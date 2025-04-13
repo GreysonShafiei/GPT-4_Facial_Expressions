@@ -56,9 +56,10 @@ To successfully reproduce this study, you must:
 | `scipy`         | Statistical testing (t-tests, z-tests)                                  |
 | `statsmodels`   | Proportions z-test and statistical modeling support                     |
 | `fpdf`          | PDF generation for final analysis report                                |
+| `Pillow`        | Automated image rotation                                                |
 | `scikit-learn`  | (Optional) For advanced analysis like confusion matrices or classifiers |
 
 To install everything at once:
 
 ```bash
-pip install openai python-dotenv pandas matplotlib seaborn scipy statsmodels fpdf scikit-le
+pip install openai python-dotenv pandas matplotlib seaborn scipy statsmodels fpdf Pillow scikit-le

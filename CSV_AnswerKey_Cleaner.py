@@ -7,7 +7,7 @@ SINGLE_CSV = "SingleFace_answers.csv"
 MATRIX_CSV = "MatrixFace_answers.csv"
 
 # Load the data
-single_answers = pd.read_csv("../WSEFEP - norms & FACS - Arkusz1.csv")
+single_answers = pd.read_csv("WSEFEP - norms & FACS - Arkusz1.csv")
 
 # Keep only Picture ID and Display columns
 single_answers = single_answers[["Picture ID", "Display"]]

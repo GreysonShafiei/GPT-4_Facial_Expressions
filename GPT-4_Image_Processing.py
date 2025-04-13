@@ -1,18 +1,19 @@
-import openai
+from openai import OpenAI
 import base64
 import os
 import csv
 import Results
 from dotenv import load_dotenv
+import Results.ResultsAnalysis as Analysis
 
 # Load API key from .env
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Define prompts
 prompts = {
-    "matrix": "What is the average emotion the group is experiencing (anger, surprise, disgust, enjoyment, fear, or sadness)? Answer by choosing one of the options without explaining further.",
-    "single": "What emotion is the person in the image experiencing (anger, surprise, disgust, enjoyment, fear, or sadness)? Answer by choosing one of the options without explaining further."
+    "matrix": "What is the average emotion the group is experiencing (anger, surprise, disgust, joy, neutral, fear, or sadness)? Answer by choosing one of the options without explaining further.  The format should be as follow: answer choice, explanation of why you selected it. For example: sadness, The person appears to...",
+    "single": "What emotion is the person in the image experiencing (anger, surprise, disgust, joy, neutral, fear, or sadness)? Answer by choosing one of the options. The format should be as follow: answer choice, explanation of why you selected it. For example: sadness, The person appears to..."
 }
 
 # Define image directories to process
@@ -45,7 +46,7 @@ for image_dir in image_dirs:
 
     with open(output_csv, mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
-        writer.writerow(["image_name", "response"])
+        writer.writerow(["image_name", "response", "full_response"])
 
         for filename in os.listdir(image_dir):
             if filename.lower().endswith((".png", ".jpg", ".jpeg")):
@@ -55,23 +56,27 @@ for image_dir in image_dirs:
                     with open(filepath, "rb") as img_file:
                         base64_image = base64.b64encode(img_file.read()).decode("utf-8")
 
-                    response = openai.ChatCompletion.create(
-                        model="gpt-4-vision-preview",
+                    response = client.chat.completions.create(
+                        model="gpt-4-turbo",
                         messages=[
-                            {"role": "user", "content": [
-                                {"type": "text", "text": prompt},
-                                {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{base64_image}"}}
-                            ]}
+                            {
+                                "role": "user",
+                                "content": [
+                                    {"type": "text", "text": prompt},
+                                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{base64_image}"}}
+                                ]
+                            }
                         ],
                         max_tokens=1000
                     )
 
-                    content = response["choices"][0]["message"]["content"]
-                    writer.writerow([filename, content])
+                    content = response.choices[0].message.content.strip()
+                    emotion_response = content.split(",", 1)[0].strip().lower()
+                    writer.writerow([filename, emotion_response, content])
                     print(f"Processed {filename} → {output_csv}")
 
                 except Exception as e:
                     print(f"Error processing {filename} in {category_name}: {str(e)}")
 
 print("Image processing complete. Running analysis:")
-Results.ResultsAnalysis.main()
+Analysis.main()
