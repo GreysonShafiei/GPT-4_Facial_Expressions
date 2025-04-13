@@ -32,9 +32,7 @@ def main():
 
         filename_lower = filename.lower()
 
-        # --------------------------------------------------------------
         # choose the correct answer key and tag the face‑type column
-        # --------------------------------------------------------------
         if "single" in filename_lower:
             answer_df = single_answers.copy()
             df["face_type"] = "individual"
@@ -47,9 +45,7 @@ def main():
         # orientation label
         df["orientation"] = "upright" if "upright" in filename_lower else "inverted"
 
-        # --------------------------------------------------------------
         # normalise answer‑key filenames *before* creating the merge key
-        # --------------------------------------------------------------
         answer_df["image_name"] = answer_df["image_name"].str.strip().str.lower()
 
         # build a common merge key (strip the .jpg extension if present)
