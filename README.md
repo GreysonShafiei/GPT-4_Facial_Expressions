@@ -19,12 +19,12 @@ To determine whether GPT-4 can:
 
 ```bash
 GPT-4_Facial_Expressions/
-├── Images/                     # Source images grouped by condition
+├── Images/                               # Source images grouped by condition
 │   ├── Matrix_inverted/
 │   ├── Matrix_upright/
 │   ├── Single_inverted/
 │   └── Single_upright/
-├── Results/                    # GPT-4 responses and answer keys
+├── Results/                              # GPT-4 responses and answer keys
 │   ├── gpt4_image_responses_*.csv
 │   ├── SingleFace_answers.csv
 │   ├── MatrixFace_answers.csv
