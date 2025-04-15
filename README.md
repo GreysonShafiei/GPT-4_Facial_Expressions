@@ -19,12 +19,12 @@ To determine whether GPT-4 can:
 
 ```bash
 GPT-4_Facial_Expressions/
-├── Images/                     # Source images grouped by condition
+├── Images/                               # Source images grouped by condition
 │   ├── Matrix_inverted/
 │   ├── Matrix_upright/
 │   ├── Single_inverted/
 │   └── Single_upright/
-├── Results/                    # GPT-4 responses and answer keys
+├── Results/                              # GPT-4 responses and answer keys
 │   ├── gpt4_image_responses_*.csv
 │   ├── SingleFace_answers.csv
 │   ├── MatrixFace_answers.csv
@@ -34,10 +34,13 @@ GPT-4_Facial_Expressions/
 │       ├── accuracy_by_face_type.png
 │       ├── accuracy_by_orientation.png
 │       └── GPT4_Analysis_Report.pdf
-├── GPT-4_Image_Processing.py   # Runs GPT-4 on image folders
-├── ResultsAnalysis.py          # Statistical analysis + PDF generation
-├── .env                        # Contains your OpenAI API key
-└── README.md                   # This file
+├── GPT-4_Image_Processing.py             # Runs GPT-4 on image folders
+├── ImageRotator.py                       # Rotates images in a folder
+├── CSV_AnswerKey_Cleaner.py              # Cleans the CSV file with the emotions
+├── WSEFEP - norms & FACS - Arkusz1.csv   # Contains the emotion connected to each image
+├── ResultsAnalysis.py                    # Statistical analysis + PDF generation
+├── .env                                  # Contains your OpenAI API key
+└── README.md                             # This file
 
 ## Required Libraries for Reproduction
 
