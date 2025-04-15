@@ -12,7 +12,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Define prompts
 prompts = {
-    "matrix": "What is the average emotion the group is experiencing (anger, surprise, disgust, joy, neutral, fear, or sadness)? Answer by choosing one of the options without explaining further.  The format should be as follow: answer choice, explanation of why you selected it. For example: sadness, The person appears to...",
+    "matrix": "What is the average emotion the group is experiencing (anger, surprise, disgust, joy, neutral, fear, or sadness)? Answer by choosing one of the options.  The format should be as follow: answer choice, explanation of why you selected it. For example: sadness, The person appears to...",
     "single": "What emotion is the person in the image experiencing (anger, surprise, disgust, joy, neutral, fear, or sadness)? Answer by choosing one of the options. The format should be as follow: answer choice, explanation of why you selected it. For example: sadness, The person appears to..."
 }
 
