@@ -1,5 +1,6 @@
 def main():
     import os
+    import re
     import pandas as pd
     import matplotlib.pyplot as plt
     import seaborn as sns
@@ -8,129 +9,154 @@ def main():
     from statsmodels.stats.proportion import proportions_ztest
 
     # Constants
-    CHANCE_LEVEL = 1 / 6  # Random Chance Statistic For Comparison
-    FINAL_RESULTS_PATH = "FinalResults"
-    print("\n Files in 'Results/' folder:")
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+    os.chdir(PROJECT_ROOT)
+    CHANCE_LEVEL = 1 / 7  # random‑chance baseline for 7 emotions
+    RESULTS_PATH = os.path.join(PROJECT_ROOT, "Results")
+    FINAL_RESULTS_PATH = os.path.join(RESULTS_PATH, "FinalResults")
+    print("\nFiles in 'Results/' folder:")
     os.listdir(".")
+    os.makedirs(FINAL_RESULTS_PATH, exist_ok=True)
 
-    # Load and normalize answers
-    single_answers = pd.read_csv("SingleFace_answers.csv")
-    matrix_answers = pd.read_csv("MatrixFace_answers.csv")
+    # Load answer keys
+    single_answers = pd.read_csv(os.path.join(RESULTS_PATH, "SingleFace_answers.csv"))
+    matrix_answers = pd.read_csv(os.path.join(RESULTS_PATH, "MatrixFace_answers.csv"))
     single_answers["correct_emotion"] = single_answers["correct_emotion"].str.strip().str.lower()
     matrix_answers["correct_emotion"] = matrix_answers["correct_emotion"].str.strip().str.lower()
 
     # Merge GPT results with correct answers
     all_data = []
-    for filename in os.listdir("."):
-        # only look at the GPT‑4 response CSVs
-        if not (filename.startswith("gpt4_image_responses") and filename.endswith(".csv")):
+    file_pat = re.compile(r"gpt4_image_responses_(.+?)_(matrix|single)_(exp|noexp)\.csv", re.I)
+    for fname in os.listdir(RESULTS_PATH):
+        m = file_pat.match(fname)
+        if not m:
             continue
 
-        df = pd.read_csv(filename)
+        # Checks csv for the various features of category, face type, and explanation
+        category_name, face_token, exp_token = m.groups()
+        prompt_style = "explanation" if exp_token.lower() == "exp" else "no_explanation"
+        face_type = "matrixed" if face_token.lower() == "matrix" else "individual"
+        orientation = "upright" if "upright" in category_name.lower() else "inverted"
+
+        df = pd.read_csv(os.path.join(RESULTS_PATH, fname))
         df["image_name"] = df["image_name"].str.strip().str.lower()
         df["response"] = df["response"].str.strip().str.lower()
+        df["face_type"] = face_type
+        df["orientation"] = orientation
+        df["prompt_style"] = prompt_style
 
-        filename_lower = filename.lower()
-
-        # choose the correct answer key and tag the face‑type column
-        if "single" in filename_lower:
-            answer_df = single_answers.copy()
-            df["face_type"] = "individual"
-        elif "matrix" in filename_lower:
-            answer_df = matrix_answers.copy()
-            df["face_type"] = "matrixed"
-        else:
-            continue  # defensive: should never happen
-
-        # orientation label
-        df["orientation"] = "upright" if "upright" in filename_lower else "inverted"
-
-        # normalise answer‑key filenames *before* creating the merge key
+        answer_df = single_answers.copy() if face_type == "individual" else matrix_answers.copy()
         answer_df["image_name"] = answer_df["image_name"].str.strip().str.lower()
 
-        # build a common merge key (strip the .jpg extension if present)
-        df["img_key"] = df["image_name"].str.replace(".jpg", "", regex=False)
-        answer_df["img_key"] = answer_df["image_name"].str.replace(".jpg", "", regex=False)
+        df["img_key"] = df["image_name"].str.replace(r"\.(jpg|jpeg|png)$", "", regex=True)
+        answer_df["img_key"] = answer_df["image_name"].str.replace(r"\.(jpg|jpeg|png)$", "", regex=True)
 
-        # merge responses with the correct answers
         merged = pd.merge(df, answer_df, on="img_key", how="inner")
-
-        # correctness flag
         merged["correct"] = merged["response"] == merged["correct_emotion"]
-
         all_data.append(merged)
 
     if not all_data:
-        print("No data files matched or were merged. Check 'Results' folder for GPT result CSVs.")
+        print("No GPT‑4 CSVs found.")
         return
 
-    # Combine all merged data
+    # Save the compiled final results
     full_df = pd.concat(all_data, ignore_index=True)
     full_df.to_csv(os.path.join(FINAL_RESULTS_PATH, "final_results.csv"), index=False)
 
-    # Print sample counts
     print("\nSample counts by face type:\n", full_df["face_type"].value_counts())
     print("\nSample counts by orientation:\n", full_df["orientation"].value_counts())
 
-    # Hypothesis Tests
+    # Hypothesis tests
     results = []
 
-    # H1: One-sample t-test vs. 80%
-    t1, p1 = stats.ttest_1samp(full_df["correct"], popmean=0.80)
-    results.append(("H1", "One-sample t-test (vs 80%)", t1, p1))
+    # H1: One-sample t-test vs. Human Average (About 82.35%)
+    t1, p1 = stats.ttest_1samp(full_df["correct"], popmean=0.8234761904761905)
+    results.append(("H1", "One-sample t-test vs human average", t1, p1))
 
     # H2: Paired t-test (upright vs inverted)
     upright = full_df[full_df["orientation"] == "upright"]["correct"].astype(int)
     inverted = full_df[full_df["orientation"] == "inverted"]["correct"].astype(int)
     min_len = min(len(upright), len(inverted))
     t2, p2 = stats.ttest_rel(upright.iloc[:min_len], inverted.iloc[:min_len])
-    results.append(("H2", "Paired t-test (upright vs inverted)", t2, p2))
+    results.append(("H2", "Paired t-test upright vs inverted", t2, p2))
 
     # H3: Independent t-test (individual vs matrixed)
     indiv = full_df[full_df["face_type"] == "individual"]["correct"].astype(int)
     matrix = full_df[full_df["face_type"] == "matrixed"]["correct"].astype(int)
     t3, p3 = stats.ttest_ind(indiv, matrix)
-    results.append(("H3", "Independent t-test (individual vs matrixed)", t3, p3))
+    results.append(("H3", "Independent t-test individual vs matrixed", t3, p3))
 
     # H4: Chi-square test vs. chance for matrixed
     matrix_only = full_df[full_df["face_type"] == "matrixed"]
-    correct_n = matrix_only["correct"].sum()
-    total_n = len(matrix_only)
-    z4, p4 = proportions_ztest(count=correct_n, nobs=total_n, value=CHANCE_LEVEL)
+    z4, p4 = proportions_ztest(count=matrix_only["correct"].sum(), nobs=len(matrix_only), value=CHANCE_LEVEL)
+    results.append(("H4", "Proportion z-test matrix vs chance", z4, p4))
 
-    results.append(("H4", "Chi-square test (matrix vs chance)", z4, p4))
+    # H5: paired t‑test (explanation vs no‑explanation)
+    exp = full_df[full_df["prompt_style"] == "explanation"]["correct"].astype(int)
+    noexp = full_df[full_df["prompt_style"] == "no_explanation"]["correct"].astype(int)
+    min_len = min(len(exp), len(noexp))
+    t5, p5 = stats.ttest_rel(exp.iloc[:min_len], noexp.iloc[:min_len])
+    results.append(("H5", "Paired t-test explanation vs no-explanation", t5, p5))
 
-    # Summary Table
-    summary_df = pd.DataFrame(results, columns=["Hypothesis", "Test", "Stat", "P-value"])
-    summary_df["Significant"] = summary_df["P-value"] < 0.05
+    summary_df = (
+        pd.DataFrame(results, columns=["Hypothesis", "Test", "Stat", "P-value"])
+        .assign(Significant=lambda d: d["P-value"] < 0.05)
+    )
     summary_df.to_csv(os.path.join(FINAL_RESULTS_PATH, "hypothesis_summary.csv"), index=False)
 
-    # Visualization
+    # Visualizations
+    def _bar(col, xlab, title, fname):
+        plt.figure(figsize=(6, 4))
+        ax = sns.barplot(data=full_df, x=col, y="correct", estimator=lambda x: sum(x) / len(x), errorbar=("ci", 95))
+        ax.set_xlabel(xlab)
+        ax.set_title(title)
+        ax.set_ylabel("Accuracy")
+        ax.set_ylim(0, 1)
+        path = os.path.join(FINAL_RESULTS_PATH, fname)
+        plt.savefig(path)
+        plt.close()
+        return path
 
-    # Accuracy by face type
-    plt.figure(figsize=(6,4))
-    sns.barplot(data=full_df, x="face_type", y="correct", estimator=lambda x: sum(x)/len(x), errorbar=('ci', 95))
-    plt.title("Accuracy by Face Type")
+    face_plot_path = _bar("face_type", "Face Type", "Accuracy by Face Type", "accuracy_by_face_type.png")
+    orient_plot_path = _bar("orientation", "Orientation", "Accuracy by Orientation", "accuracy_by_orientation.png")
+    prompt_plot = _bar("prompt_style", "Prompt Style", "Accuracy by Prompt Style", "accuracy_by_prompt_style.png")
+
+    emotion_face = (
+        full_df.assign(
+                is_correct=lambda d: d["correct"].astype(int))
+               .groupby(["face_type", "correct_emotion"], as_index=False)
+               .agg(accuracy=("is_correct", "mean"))
+    )
+    plt.figure(figsize=(10, 5))
+    sns.barplot(data=emotion_face, x="correct_emotion", y="accuracy", hue="face_type", errorbar=("ci", 95))
+    plt.title("Per-Emotion Accuracy by Face Type")
     plt.ylabel("Accuracy")
-    plt.xlabel("Face Type")
-    plt.ylim(0,1)
-    face_plot_path = os.path.join(FINAL_RESULTS_PATH, "accuracy_by_face_type.png")
-    plt.savefig(face_plot_path)
+    plt.ylim(0, 1)
+    plt.xlabel("Emotion")
+    plt.legend(title="Face Type", loc="upper right")
+    face_em_plot = os.path.join(FINAL_RESULTS_PATH, "accuracy_by_emotion_and_face_type.png")
+    plt.savefig(face_em_plot)
     plt.close()
 
-    # Accuracy by orientation
-    plt.figure(figsize=(6,4))
-    sns.barplot(data=full_df, x="orientation", y="correct", estimator=lambda x: sum(x)/len(x), errorbar=('ci', 95))
-    plt.title("Accuracy by Orientation")
+    emotion_orient = (
+        full_df.assign(
+                is_correct=lambda d: d["correct"].astype(int))
+               .groupby(["orientation", "correct_emotion"], as_index=False)
+               .agg(accuracy=("is_correct", "mean"))
+    )
+    plt.figure(figsize=(10, 5))
+    sns.barplot(data=emotion_orient, x="correct_emotion", y="accuracy", hue="orientation", errorbar=("ci", 95))
+    plt.title("Per-Emotion Accuracy by Orientation")
     plt.ylabel("Accuracy")
-    plt.xlabel("Orientation")
-    plt.ylim(0,1)
-    orient_plot_path = os.path.join(FINAL_RESULTS_PATH, "accuracy_by_orientation.png")
-    plt.savefig(orient_plot_path)
+    plt.ylim(0, 1)
+    plt.xlabel("Emotion")
+    plt.legend(title="Orientation", loc="upper right")
+    orient_em_plot = os.path.join(FINAL_RESULTS_PATH, "accuracy_by_emotion_and_orientation.png")
+    plt.savefig(orient_em_plot)
     plt.close()
 
-    # PDF of Results
-
+    # PDF report
     class PDF(FPDF):
         def header(self):
             self.set_font("Arial", "B", 14)
@@ -150,22 +176,29 @@ def main():
     pdf = PDF()
     pdf.add_page()
 
+    # Summarize the calculations results
     pdf.section_title("Summary of Hypothesis Tests")
     for _, row in summary_df.iterrows():
-        significance = "Significant" if row["Significant"] else "Not Significant"
-        text = f"{row['Hypothesis']} - {row['Test']}\nStat: {row['Stat']:.3f}, P-value: {row['P-value']:.4f} --> {significance}"
-        pdf.section_body(text)
+        sig = "Significant" if row["Significant"] else "Not Significant"
+        txt = (
+            f"{row['Hypothesis']} - {row['Test']}\n"
+            f"Stat: {row['Stat']:.3f}, P-value: {row['P-value']:.4f} --> {sig}"
+        )
+        pdf.section_body(txt)
 
+    pdf.add_page()
+
+    # Add each of the plots
     pdf.section_title("Visualizations")
-
-    pdf.image(face_plot_path, w=160)
-    pdf.ln(10)
-    pdf.image(orient_plot_path, w=160)
+    for img in [prompt_plot, face_plot_path, orient_plot_path,
+                face_em_plot, orient_em_plot]:
+        pdf.image(img, w=160)
+        pdf.ln(6)
 
     pdf_path = os.path.join(FINAL_RESULTS_PATH, "GPT4_Analysis_Report.pdf")
     pdf.output(pdf_path)
-
     print(f"\nReport saved to: {pdf_path}")
+
 
 if __name__ == "__main__":
     main()
