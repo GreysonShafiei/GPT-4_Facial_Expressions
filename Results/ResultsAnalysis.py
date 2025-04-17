@@ -7,6 +7,7 @@ def main():
     from scipy import stats
     from fpdf import FPDF
     from statsmodels.stats.proportion import proportions_ztest
+    from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 
     # Constants
     SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -156,6 +157,24 @@ def main():
     plt.savefig(orient_em_plot)
     plt.close()
 
+    # Confusion matrix
+    def plot_conf_matrix(df, group_label):
+        y_true = df["correct_emotion"]
+        y_pred = df["response"]
+        labels = sorted(y_true.unique())
+        cm = confusion_matrix(y_true, y_pred, labels=labels)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+        fig, ax = plt.subplots(figsize=(8, 6))
+        disp.plot(include_values=True, cmap='Blues', ax=ax, xticks_rotation=45)
+        ax.set_title(f'Confusion Matrix: {group_label}')
+        plt.tight_layout()
+        path = os.path.join(FINAL_RESULTS_PATH, f'conf_matrix_{group_label}.png')
+        plt.savefig(path)
+        plt.close()
+        return path
+
+    conf_matrix_overall_path = plot_conf_matrix(full_df, "overall")
+
     # PDF report
     class PDF(FPDF):
         def header(self):
@@ -191,7 +210,7 @@ def main():
     # Add each of the plots
     pdf.section_title("Visualizations")
     for img in [prompt_plot, face_plot_path, orient_plot_path,
-                face_em_plot, orient_em_plot]:
+                face_em_plot, orient_em_plot, conf_matrix_overall_path]:
         pdf.image(img, w=160)
         pdf.ln(6)
 
