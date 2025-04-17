@@ -173,7 +173,9 @@ def main():
         plt.close()
         return path
 
-    conf_matrix_overall_path = plot_conf_matrix(full_df, "overall")
+    conf_matrix_overall_path = plot_conf_matrix(full_df, "Overall")
+    conf_matrix_upright = plot_conf_matrix(full_df[full_df["orientation"] == "upright"], "Upright")
+    conf_matrix_inverted = plot_conf_matrix(full_df[full_df["orientation"] == "inverted"], "Inverted")
 
     # PDF report
     class PDF(FPDF):
@@ -210,7 +212,7 @@ def main():
     # Add each of the plots
     pdf.section_title("Visualizations")
     for img in [prompt_plot, face_plot_path, orient_plot_path,
-                face_em_plot, orient_em_plot, conf_matrix_overall_path]:
+                face_em_plot, orient_em_plot, conf_matrix_overall_path, conf_matrix_upright, conf_matrix_inverted]:
         pdf.image(img, w=160)
         pdf.ln(6)
 
