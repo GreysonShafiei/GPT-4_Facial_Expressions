@@ -56,11 +56,11 @@ for image_dir in image_dirs:
         print(f"Skipping {image_dir}: category unresolved.")
         continue
 
-    for pkey in keys:                                  # run for the number of prompts in category
+    # Run for the number of prompts in category
+    for pkey in keys:
         prompt_text = prompts[pkey]
         category_name = os.path.basename(image_dir).lower()
-        output_csv = os.path.join(output_folder,
-                                  f"gpt4_image_responses_{category_name}_{pkey}.csv")
+        output_csv = os.path.join(output_folder, f"gpt4_image_responses_{category_name}_{pkey}.csv")
 
         with open(output_csv, "w", newline="", encoding="utf‑8") as file:
             writer = csv.writer(file)
@@ -96,9 +96,6 @@ for image_dir in image_dirs:
 
                 except Exception as e:
                     print(f"Error processing {fname} ({pkey}): {e}")
-
-print("Image processing complete. Running analysis:")
-Analysis.main()
 
 print("Image processing complete. Running analysis:")
 Analysis.main()
