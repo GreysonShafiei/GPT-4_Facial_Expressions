@@ -14,7 +14,6 @@ df = pd.read_csv('final_results.csv')
 # PDF output
 pdf = PdfPages('GPT4_ML_Analysis_Report.pdf')
 
-
 # ------ Predictive analysis of the final_results ------
 
 # Encode categorical variables
