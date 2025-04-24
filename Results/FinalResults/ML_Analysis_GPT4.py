@@ -47,6 +47,7 @@ plt.colorbar(cax)
 plt.grid(False)
 plt.tight_layout()
 pdf.savefig(fig)
+plt.savefig('ML_confusion_matrix.png')
 plt.close()
 
 # Feature importance plot
@@ -56,6 +57,7 @@ feature_importances.tail(10).plot(kind='barh', ax=ax)
 ax.set_title('Top 10 Feature Importances')
 plt.tight_layout()
 pdf.savefig(fig)
+plt.savefig('ML_feature_importances.png')
 plt.close()
 
 # Add accuracy and export to the PDF
@@ -65,6 +67,7 @@ plt.title('Classification Report', fontsize=14)
 report_text = f"Accuracy: {acc:.2f}\n\nClassification Report:\n{report}"
 plt.text(0, 1, report_text, fontsize=10, va='top', ha='left', family='monospace')
 pdf.savefig(fig)
+plt.savefig('ML_classification_report.png')
 plt.close()
 
 # ------ Exploratory analysis of the final_results ------
@@ -87,6 +90,7 @@ plt.colorbar(scatter, label='Correct (1) vs Incorrect (0)')
 plt.grid(True)
 plt.tight_layout()
 pdf.savefig(fig)
+plt.savefig('ML_features_scaled.png')
 plt.close()
 
 # K-Means Clustering
@@ -104,6 +108,7 @@ ax.add_artist(legend1)
 plt.grid(True)
 plt.tight_layout()
 pdf.savefig(fig)
+plt.savefig('ML_kmeans_clusters.png')
 plt.close()
 
 pdf.close()
