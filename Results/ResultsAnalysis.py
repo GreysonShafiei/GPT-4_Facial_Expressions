@@ -101,10 +101,7 @@ def main():
     t5, p5 = stats.ttest_rel(exp.iloc[:min_len], noexp.iloc[:min_len])
     results.append(("H5", "Paired t-test explanation vs no-explanation", t5, p5))
 
-    summary_df = (
-        pd.DataFrame(results, columns=["Hypothesis", "Test", "Stat", "P-value"])
-        .assign(Significant=lambda d: d["P-value"] < 0.05)
-    )
+    summary_df = (pd.DataFrame(results, columns=["Hypothesis", "Test", "Stat", "P-value"]).assign(Significant=lambda d: d["P-value"] < 0.05))
     summary_df.to_csv(os.path.join(FINAL_RESULTS_PATH, "hypothesis_summary.csv"), index=False)
 
     # Visualizations
@@ -124,12 +121,7 @@ def main():
     orient_plot_path = _bar("orientation", "Orientation", "Accuracy by Orientation", "accuracy_by_orientation.png")
     prompt_plot = _bar("prompt_style", "Prompt Style", "Accuracy by Prompt Style", "accuracy_by_prompt_style.png")
 
-    emotion_face = (
-        full_df.assign(
-                is_correct=lambda d: d["correct"].astype(int))
-               .groupby(["face_type", "correct_emotion"], as_index=False)
-               .agg(accuracy=("is_correct", "mean"))
-    )
+    emotion_face = (full_df.assign(is_correct=lambda d: d["correct"].astype(int)).groupby(["face_type", "correct_emotion"], as_index=False).agg(accuracy=("is_correct", "mean")))
     plt.figure(figsize=(10, 5))
     sns.barplot(data=emotion_face, x="correct_emotion", y="accuracy", hue="face_type", errorbar=("ci", 95))
     plt.title("Per-Emotion Accuracy by Face Type")
@@ -141,12 +133,7 @@ def main():
     plt.savefig(face_em_plot)
     plt.close()
 
-    emotion_orient = (
-        full_df.assign(
-                is_correct=lambda d: d["correct"].astype(int))
-               .groupby(["orientation", "correct_emotion"], as_index=False)
-               .agg(accuracy=("is_correct", "mean"))
-    )
+    emotion_orient = (full_df.assign(is_correct=lambda d: d["correct"].astype(int)).groupby(["orientation", "correct_emotion"], as_index=False).agg(accuracy=("is_correct", "mean")))
     plt.figure(figsize=(10, 5))
     sns.barplot(data=emotion_orient, x="correct_emotion", y="accuracy", hue="orientation", errorbar=("ci", 95))
     plt.title("Per-Emotion Accuracy by Orientation")
