@@ -1,6 +1,6 @@
 Hypothesis,Test,Stat,P-value,Significant
 H1,One-sample t-test vs human average,-14.02590526249064,1.30874085787524e-40,True
 H2,Paired t-test upright vs inverted,13.141101348030816,1.1514728702775788e-33,True
-H3,Independent t-test individual vs matrixed,3.5091809401420164,0.0004715179759067982,True
+H3,Welch t-test individual vs matrixed,1.9108904843095336,0.06929456197613588,False
 H4,Proportion z-test matrix vs chance,4.899119149302087,9.62672559213609e-07,True
 H5,Paired t-test explanation vs no-explanation,-0.9621721309470003,0.3364741978369402,False

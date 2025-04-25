@@ -83,10 +83,11 @@ def main():
     results.append(("H2", "Paired t-test upright vs inverted", t2, p2))
 
     # H3: Independent t-test (individual vs matrixed)
-    indiv = full_df[full_df["face_type"] == "individual"]["correct"].astype(int)
-    matrix = full_df[full_df["face_type"] == "matrixed"]["correct"].astype(int)
-    t3, p3 = stats.ttest_ind(indiv, matrix)
-    results.append(("H3", "Independent t-test individual vs matrixed", t3, p3))
+    img_level = (full_df.groupby(['img_key', 'face_type'], as_index=False)['correct'].mean())
+    indiv = img_level[img_level['face_type'] == 'individual']['correct']
+    matrix = img_level[img_level['face_type'] == 'matrixed']['correct']
+    t3, p3 = stats.ttest_ind(indiv, matrix, equal_var=False)
+    results.append(("H3", "Welch t-test individual vs matrixed", t3, p3))
 
     # H4: Chi-square test vs. chance for matrixed
     matrix_only = full_df[full_df["face_type"] == "matrixed"]
