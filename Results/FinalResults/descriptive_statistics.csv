@@ -1,0 +1,8 @@
+Grouping,Level,N,Accuracy_Mean,Accuracy_SD
+Overall,All,912,0.595,0.491
+face_type,individual,832,0.613,0.487
+face_type,matrixed,80,0.412,0.495
+orientation,inverted,456,0.45,0.498
+orientation,upright,456,0.741,0.438
+prompt_style,explanation,456,0.59,0.492
+prompt_style,no_explanation,456,0.601,0.49

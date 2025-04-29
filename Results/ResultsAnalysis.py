@@ -68,6 +68,30 @@ def main():
     print("\nSample counts by face type:\n", full_df["face_type"].value_counts())
     print("\nSample counts by orientation:\n", full_df["orientation"].value_counts())
 
+    # Descriptive statistics (overall + by face_type, orientation, prompt_style)
+    # 1 = correct, 0 = incorrect
+    full_df["correct_numeric"] = full_df["correct"].astype(int)
+
+    desc_rows = []
+
+    def _append_stats(grouping, level, subset):
+        desc_rows.append({"Grouping": grouping, "Level": level, "N": len(subset), "Accuracy_Mean": subset["correct_numeric"].mean(), "Accuracy_SD": subset["correct_numeric"].std(ddof=1)})
+
+    # Overall
+    _append_stats("Overall", "All", full_df)
+
+    # By each experimental factor
+    for col in ["face_type", "orientation", "prompt_style"]:
+        for level, sub in full_df.groupby(col):
+            _append_stats(col, level, sub)
+
+    # Assemble DataFrame
+    desc_df = (pd.DataFrame(desc_rows).sort_values(["Grouping", "Level"]).reset_index(drop=True))
+    desc_df[["Accuracy_Mean", "Accuracy_SD"]] = desc_df[["Accuracy_Mean", "Accuracy_SD"]].round(3)
+    desc_stats_path = os.path.join(FINAL_RESULTS_PATH, "descriptive_statistics.csv")
+    desc_df.to_csv(desc_stats_path, index=False)
+    print(f"Descriptive statistics saved to: {desc_stats_path}")
+
     # Hypothesis tests
     results = []
 
