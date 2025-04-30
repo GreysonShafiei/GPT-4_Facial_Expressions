@@ -1,8 +1,9 @@
-Grouping,Level,N,Accuracy_Mean,Accuracy_SD
-Overall,All,912,0.595,0.491
-face_type,individual,832,0.613,0.487
-face_type,matrixed,80,0.412,0.495
-orientation,inverted,456,0.45,0.498
-orientation,upright,456,0.741,0.438
-prompt_style,explanation,456,0.59,0.492
-prompt_style,no_explanation,456,0.601,0.49
+Face type,Orientation,Prompt style,N,Accuracy_Mean,Accuracy_SD
+Individual,Inverted,Explanation,208,0.452,0.499
+Individual,Inverted,No explanation,208,0.466,0.5
+Individual,Upright,Explanation,208,0.764,0.425
+Individual,Upright,No explanation,208,0.769,0.422
+Matrixed,Inverted,Explanation,20,0.35,0.489
+Matrixed,Inverted,No explanation,20,0.35,0.489
+Matrixed,Upright,Explanation,20,0.45,0.51
+Matrixed,Upright,No explanation,20,0.5,0.513
