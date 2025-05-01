@@ -151,10 +151,7 @@ def main():
 
     full_df["condition"] = full_df["orientation"].str.title() + " - " + full_df["face_type"].str.title()
 
-    emotion_combined = (
-        full_df.assign(is_correct=lambda d: d["correct"].astype(int)).groupby(["condition", "correct_emotion"],
-                                                                              as_index=False).agg(
-            accuracy=("is_correct", "mean")))
+    emotion_combined = (full_df.assign(is_correct=lambda d: d["correct"].astype(int)).groupby(["condition", "correct_emotion"],as_index=False).agg(accuracy=("is_correct", "mean")))
 
     plt.figure(figsize=(18, 7))  # wider and taller
     sns.barplot(
