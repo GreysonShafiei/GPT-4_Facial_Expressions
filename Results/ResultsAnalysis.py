@@ -141,6 +141,40 @@ def main():
     orient_plot_path = _bar("orientation", "Orientation", "Accuracy by Orientation", "accuracy_by_orientation.png")
     prompt_plot = _bar("prompt_style", "Prompt Style", "Accuracy by Prompt Style", "accuracy_by_prompt_style.png")
 
+    plt.rcParams.update({
+        "axes.titlesize": 18,
+        "axes.labelsize": 16,
+        "xtick.labelsize": 14,
+        "ytick.labelsize": 14,
+        "legend.fontsize": 13
+    })
+
+    full_df["condition"] = full_df["orientation"].str.title() + " - " + full_df["face_type"].str.title()
+
+    emotion_combined = (
+        full_df.assign(is_correct=lambda d: d["correct"].astype(int)).groupby(["condition", "correct_emotion"],
+                                                                              as_index=False).agg(
+            accuracy=("is_correct", "mean")))
+
+    plt.figure(figsize=(18, 7))  # wider and taller
+    sns.barplot(
+        data=emotion_combined,
+        x="correct_emotion",
+        y="accuracy",
+        hue="condition",
+        errorbar=("ci", 95)
+    )
+    plt.title("Per-Emotion Accuracy by Condition (Orientation × Face Type)")
+    plt.ylabel("Accuracy")
+    plt.xlabel("Emotion")
+    plt.ylim(0, 1)
+    plt.xticks(rotation=45, ha="right")  # Rotate x labels for readability
+    plt.legend(title="Condition", loc="upper right")
+    emotion_condition_plot_path = os.path.join(FINAL_RESULTS_PATH, "accuracy_by_emotion_and_condition.png")
+    plt.tight_layout()
+    plt.savefig(emotion_condition_plot_path, dpi=600)
+    plt.close()
+
     emotion_face = (full_df.assign(is_correct=lambda d: d["correct"].astype(int)).groupby(["face_type", "correct_emotion"], as_index=False).agg(accuracy=("is_correct", "mean")))
     plt.figure(figsize=(10, 5))
     sns.barplot(data=emotion_face, x="correct_emotion", y="accuracy", hue="face_type", errorbar=("ci", 95))
@@ -162,7 +196,7 @@ def main():
     plt.xlabel("Emotion")
     plt.legend(title="Orientation", loc="upper right")
     orient_em_plot = os.path.join(FINAL_RESULTS_PATH, "accuracy_by_emotion_and_orientation.png")
-    plt.savefig(orient_em_plot)
+    plt.savefig(orient_em_plot, dpi=300)
     plt.close()
 
     # Confusion matrix
@@ -219,8 +253,7 @@ def main():
 
     # Add each of the plots
     pdf.section_title("Visualizations")
-    for img in [prompt_plot, face_plot_path, orient_plot_path,
-                face_em_plot, orient_em_plot, conf_matrix_overall_path, conf_matrix_upright, conf_matrix_inverted]:
+    for img in [prompt_plot, face_plot_path, orient_plot_path, emotion_condition_plot_path, face_em_plot, orient_em_plot, conf_matrix_overall_path, conf_matrix_upright, conf_matrix_inverted]:
         pdf.image(img, w=160)
         pdf.ln(6)
 
