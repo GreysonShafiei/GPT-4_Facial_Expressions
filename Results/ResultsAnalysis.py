@@ -109,7 +109,7 @@ def main():
     t3, p3 = stats.ttest_ind(indiv, matrix, equal_var=False)
     results.append(("H3", "Welch t-test individual vs matrixed", t3, p3))
 
-    # H4: Chi-square test vs. chance for matrixed
+    # H4: Proportion z-test vs. chance for matrixed
     matrix_only = full_df[full_df["face_type"] == "matrixed"]
     z4, p4 = proportions_ztest(count=matrix_only["correct"].sum(), nobs=len(matrix_only), value=CHANCE_LEVEL)
     results.append(("H4", "Proportion z-test matrix vs chance", z4, p4))
